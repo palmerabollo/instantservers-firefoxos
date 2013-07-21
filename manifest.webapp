@@ -1,0 +1,26 @@
+{
+  "name": "Instant Servers",
+  "description": "Instant Servers. Online computing power.",
+  "version": "0.2",
+  "type": "privileged",
+  "permissions": {
+    "storage": {},
+    "systemXHR": {}
+  },
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "Guido García",
+    "url": "http://guidogarcia.net"
+  },
+  "locales": {
+    "en-US": {
+      "name": "Instant Servers",
+      "description": "Instant Servers. Online computing power."
+    }
+  },
+  "default_locale": "en-US",
+  "icons": {
+    "75": "/style/icons/main.png",
+    "128": "/style/icons/main_128.jpeg"
+  }
+}
