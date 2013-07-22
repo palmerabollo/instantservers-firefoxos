@@ -66,7 +66,7 @@ const UI = (function() {
       (machine.state === 'running' ? '<img src="./res/green.gif">' : '<img src="./res/red.gif">') + '&nbsp;' +
       machine.name + 
       '</p>' +
-      '<p>' + machine.primaryIp + ' - ' + (machine.memory / 1024) + 'GB - [' + machine.state + ']</p>' + 
+      '<p>' + machine.primaryIp + ' - ' + (machine.memory / 1024) + 'GB - ' + machine.type + '</p>' + 
       '</a>' +
       '</li>';
 
