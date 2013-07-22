@@ -1,41 +1,89 @@
 'use strict';
 
 const UI = (function() {
-  var username;
-  var password; // TODO move to async_storage
-
   navigator.mozL10n.ready(function localize() {
     // Do nothing rigth now
   });
 
-  var ENDPOINTS = [
-    "api-eu-mad-1.instantservers.telefonica.com",
-    "api-eu-lon-1.instantservers.telefonica.com"
-  ];
+  var X_API_VERSION_HEADER = '~6.5';
 
-  var startButton = document.querySelector('#start');
-  startButton.addEventListener('click', function(e) {
-    
-    username = document.querySelector('#username').value;
-    password = document.querySelector('#password').value;
+  var ENDPOINTS = {
+    'Madrid': 'https://api-eu-mad-1.instantservers.telefonica.com',
+    'London': 'https://api-eu-lon-1.instantservers.telefonica.com'
+  };
 
-    getMachines(ENDPOINTS[0], function(result) {
-      if (result) {
-        var machinesView = document.querySelector('#machines-view');
-        machinesView.dataset.pagePosition = 'viewport'; // vs 'bottom'
+  var MACHINES = {};
 
-        var machines = JSON.parse(result);
-        var machinesList = document.querySelector('#machines');
-        machines.forEach(function(machine) {
-          machinesList.innerHTML += '<li><a href="#"><p>' + machine.name + '</p>' +
-            '<p>' + machine.primaryIp + ' [' + machine.state + ']</p></a></li>';
-        });
-      }
+  var refresh = function(e) {
+    document.querySelector('#start').disabled = true;
+    document.querySelector('#start').innerHTML = 'Loading...'; // i18n
+
+    var username = document.querySelector('#username').value;
+    var password = document.querySelector('#password').value;
+
+    Object.keys(ENDPOINTS).forEach(function(key) {
+      document.querySelector('#total-' + key).innerHTML = "...";
+      document.querySelector('#machines-' + key).innerHTML = "";
+
+      getMachines(ENDPOINTS[key], username, password, function(err, result) {
+        if (err) {
+          document.querySelector('#start').disabled = false;
+          document.querySelector('#start').innerHTML = 'Login'; // i18n
+
+          alert(err);
+        } else {
+          var machinesView = document.querySelector('#machines-view');
+          machinesView.dataset.pagePosition = 'viewport'; // vs 'bottom'
+
+          MACHINES[key] = JSON.parse(result); // save globally
+
+          var machinesList = document.querySelector('#machines-' + key);
+          MACHINES[key].forEach(function(machine) {
+            addListItem(key, machine, machinesList);
+          });
+
+          document.querySelector('#total-' + key).innerHTML = '(' + MACHINES[key].length + ')';
+        }
+      });
     });
-  });
+  };
 
-  var getMachines = function(endpoint, callback) {
-    var endpoint = 'https://' + endpoint + '/my/machines';
+  function addEventHandlers() {
+    var startButton = document.getElementById('start');
+    startButton.addEventListener('click', refresh);
+    var refreshButton = document.getElementById('refresh');
+    refreshButton.addEventListener('click', refresh);
+  }
+
+  addEventHandlers();
+
+  var addListItem = function(datacenterName, machine, machinesList) {
+    // TODO use proper template engine
+    machinesList.innerHTML += '' +
+      '<li>' +
+      '<a href="#" id="' + machine.id + '">' +
+      '<p>' + machine.name + '</p>' +
+      '<p>' + machine.primaryIp + ' - ' + (machine.memory / 1024) + 'GB - [' + machine.state + ']</p>' + 
+      '</a>' +
+      '</li>';
+
+    var item = document.getElementById(machine.id);
+    item.addEventListener('click', function(e) {
+      alert('Datacenter: ' + datacenter + '<br />' +
+        'Name: ' + machine.name + '<br />' +
+        'Type: ' + machine.type + '<br />' +
+        'State: ' + machine.state + '<br />' +
+        'Dataset: ' + machine.dataset + '<br />' +
+        'Memory: ' + machine.memory + '<br />' +
+        'Disk: ' + machine.disk + '<br />' +
+        'IP: ' + machine.primaryIp + '<br />' +
+        'Creation: ' + machine.created + '<br />'
+      );
+    });
+  }
+
+  var getMachines = function(endpoint, username, password, callback) {
+    var endpoint = endpoint + '/my/machines';
 
     var xhr = new XMLHttpRequest({
       mozSystem: true
@@ -43,33 +91,29 @@ const UI = (function() {
 
     xhr.open('GET', endpoint, true, username, password);
 
-    xhr.timeout = 5000;
+    xhr.timeout = 45000;
 
-    xhr.setRequestHeader('X-Api-Version', '~6.5');
+    xhr.setRequestHeader('X-Api-Version', X_API_VERSION_HEADER);
     xhr.setRequestHeader('Accept', 'application/json');
     xhr.setRequestHeader('Content-Type', 'application/json');
 
     xhr.onload = function() {
       if (xhr.status === 200 || xhr.status === 0) {
-        callback(this.responseText)
+        callback(null, this.responseText)
       } else if (xhr.status === 401) {
-        alert("Wrong username or password.")
-        callback(null);
+        callback("Wrong username or password.");
       } else {
-        alert("Not able to get your machines. Try again in a minute.");
-        callback(null);
+        callback("Not able to get your machines. Please try again.");
       }
-    }; // onload
+    };
 
     xhr.ontimeout = function() {
-      alert("Not able to get your machines (timeout). Try again in a minute.");
-      callback(null);
-    }; // ontimeout
+      callback("Not able to get your machines (timeout). Try again in a minute.");
+    };
 
     xhr.onerror = function() {
-      alert("Not able to get your machines. An error occurred.");
-      callback(null);
-    }; // onerror
+      callback("Not able to get your machines. An error occurred.");
+    };
 
     xhr.send();
   };

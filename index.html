@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="shared/style/input_areas.css">
     <link rel="stylesheet" type="text/css" href="shared/style/buttons.css">
     <link rel="stylesheet" type="text/css" href="shared/style/confirm.css">
+    <link rel="stylesheet" type="text/css" href="shared/style_unstable/progress_activity.css">
 
     <!-- Localization -->
     <link rel="resource" type="application/l10n" href="locales/locales.ini">
@@ -25,44 +26,52 @@
   </head>
 
   <body>
-    <section id="login-view" class="view" role="region" data-page-position="viewport">
+    <section id="login-view" class="view skin-dark" role="region" data-page-position="viewport">
       <header>
         <h1 data-l10n-id="app-title">Instant Servers</h1>
       </header>
-
+      <header>
+        <h2>Login</h2>
+      </header>
       <section id="login">
+        <img src="http://cloud.telefonica.com/instantservers/img/illustration_instantserver.png" />
+
         <form>
           <p>
             <input type="text" id="username" placeholder="your username" required="required">
           </p>
           <p>
-            <input type="text" id="password" placeholder="your password" required="required">
+            <input type="password" id="password" placeholder="your password" required="required">
           </p>
         </form>
 
         <section>
           <button id="start">Login</button>
         </section>
-
       </section>
     </section>
 
-    <section id="machines-view" class="view" role="region" data-page-position="bottom">
+    <section id="machines-view" class="view skin-dark" role="region" data-page-position="bottom">
       <header>
+        <!--
+        <a href="#login-view"><span class="icon icon-back">back</span></a>
+        -->
         <h1 data-l10n-id="app-title">Instant Servers</h1>
+      </header>
+      <header>
+        <h2>Virtual Machines</h2>
       </header>
 
       <section data-type="list">
-        <header>Virtual Machines</header>
-        <ul id="machines">
+        <header>Datacenter Madrid <span id="total-Madrid"></span></header>
+        <ul id="machines-Madrid">
         </ul>
-      </section>
-    </section>
+        <header>Datacenter London <span id="total-London"></span></header>
+        <ul id="machines-London">
+        </ul>
 
-    <section id="machine-detail-view" class="view" role="region" data-page-position="bottom">
-      <header>
-        <h1 data-l10n-id="app-title">Instant Servers</h1>
-      </header>
+        <button id="refresh">Reload</button>
+      </section>
     </section>
 
   </body>

@@ -51,8 +51,8 @@ html, body {
   position: fixed;
   width: 100%;
   height: 100%;
-  background-color: #222;
   transition: transform 0.3s ease;
+  background-color: #f3f3f3;
 }
 
 .view[data-page-position = "viewport"] {
@@ -70,37 +70,23 @@ html, body {
 .view > section {
   padding-top: 2rem;
   text-align: center;
-  width: 100%;
   height: calc(100% - 5rem);
-}
-
-#meeting {
-  margin-top: 3rem;
 }
 
 section[role="region"] > header .icon.icon-settings {
   background-image: url(icons/settings.png);
 }
 
-span.current_minutes {
-  font-size: 8rem;
+section[data-type="list"] {
+  overflow: auto;
+  text-align: left;
 }
 
-span.current_cost {
-  font-size: 3rem;
-}
-
-.letterpress {
-  text-shadow: 0px 1px 1px #ccc;
-  color: #ddd;
-}
-
-.summary {
-  font-size: 1.5rem;
-  color: gray;
+input {
+  width: 80%;
 }
 
 button {
-  margin-top: 1rem;
+  margin-top: 2rem;
   width: 70%;
 }

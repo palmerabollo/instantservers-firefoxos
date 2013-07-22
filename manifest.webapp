@@ -2,7 +2,7 @@
   "name": "Instant Servers",
   "description": "Instant Servers. Online computing power.",
   "version": "0.2",
-  "type": "privileged",
+  "type": "certified",
   "permissions": {
     "storage": {},
     "systemXHR": {}
