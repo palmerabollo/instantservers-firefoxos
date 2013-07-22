@@ -62,7 +62,10 @@ const UI = (function() {
     machinesList.innerHTML += '' +
       '<li>' +
       '<a href="#" id="' + machine.id + '">' +
-      '<p>' + machine.name + '</p>' +
+      '<p>' + 
+      (machine.state === 'running' ? '<img src="./res/green.gif">' : '<img src="./res/red.gif">') + '&nbsp;' +
+      machine.name + 
+      '</p>' +
       '<p>' + machine.primaryIp + ' - ' + (machine.memory / 1024) + 'GB - [' + machine.state + ']</p>' + 
       '</a>' +
       '</li>';

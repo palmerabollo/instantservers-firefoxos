@@ -47,6 +47,10 @@ html, body {
   html { font-size: 105%!important; }
 }
 
+img.logo {
+  padding: 2rem;
+}
+
 .view {
   position: fixed;
   width: 100%;
@@ -68,7 +72,6 @@ html, body {
 }
 
 .view > section {
-  padding-top: 2rem;
   text-align: center;
   height: calc(100% - 5rem);
 }
@@ -82,11 +85,31 @@ section[data-type="list"] {
   text-align: left;
 }
 
-input {
-  width: 80%;
+form#login-form {
+  text-align: center;
+  display: inline-block;
+  margin: 0 auto;
 }
 
 button {
   margin-top: 2rem;
-  width: 70%;
+  width: 50%;
+}
+
+.info {
+  margin-top: 1rem;
+  font: normal 1.4rem/1em;
+}
+
+/** tabs hack */
+[role="tablist"] .active [role="tabpanel"] {
+  z-index: 1;
+  visibility: visible;
+}
+
+[role="tablist"][data-type="filter"] > [role="tab"].active {
+  background: #fff;
+  border: solid 0.1rem #999;
+  border-top: none;
+  color: #000;
 }

@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="shared/style_unstable/lists.css">
     <link rel="stylesheet" type="text/css" href="shared/style/input_areas.css">
     <link rel="stylesheet" type="text/css" href="shared/style/buttons.css">
+    <link rel="stylesheet" type="text/css" href="shared/style_unstable/tabs.css">
     <link rel="stylesheet" type="text/css" href="shared/style/confirm.css">
     <link rel="stylesheet" type="text/css" href="shared/style_unstable/progress_activity.css">
 
@@ -25,18 +26,20 @@
     <script defer type="application/javascript" src="js/template-ui.js"></script>
   </head>
 
-  <body>
+  <body role="application">
     <section id="login-view" class="view skin-dark" role="region" data-page-position="viewport">
       <header>
         <h1 data-l10n-id="app-title">Instant Servers</h1>
       </header>
       <header>
-        <h2>Login</h2>
+        <h2>Sign in</h2>
       </header>
-      <section id="login">
-        <img src="http://cloud.telefonica.com/instantservers/img/illustration_instantserver.png" />
 
-        <form>
+      <section id="login">
+
+        <img class="logo" src="http://cloud.telefonica.com/instantservers/img/illustration_instantserver.png" />
+
+        <form id="login-form">
           <p>
             <input type="text" id="username" placeholder="your username" required="required">
           </p>
@@ -47,30 +50,54 @@
 
         <section>
           <button id="start">Login</button>
+          <br/>
+          <span class="info">cloud.telefonica.es</span>
         </section>
       </section>
     </section>
 
     <section id="machines-view" class="view skin-dark" role="region" data-page-position="bottom">
       <header>
-        <!--
-        <a href="#login-view"><span class="icon icon-back">back</span></a>
-        -->
+        <menu type="toolbar">
+          <a href="#" id="refresh">
+            <span data-l10n-id="refresh">
+              Reload
+            </span>
+          </a>
+        </menu>
         <h1 data-l10n-id="app-title">Instant Servers</h1>
       </header>
+
+      <!--
       <header>
         <h2>Virtual Machines</h2>
       </header>
+      -->
 
-      <section data-type="list">
-        <header>Datacenter Madrid <span id="total-Madrid"></span></header>
-        <ul id="machines-Madrid">
+      <section role="region">
+        <ul role="tablist" data-items="3">
+          <li id="panel1" role="tab" class="active">
+            <a href="#panel1">Compute</a>
+            <div role="tabpanel">
+              <section data-type="list">
+                <header>Datacenter Madrid <span id="total-Madrid"></span></header>
+                <ul id="machines-Madrid">
+                </ul>
+                <header>Datacenter London <span id="total-London"></span></header>
+                <ul id="machines-London">
+                </ul>
+              </section>
+            </div>
+          </li>
+          <li id="panel2" role="tab" aria-disabled="true">
+            <a href="#panel2">Network</a>
+            <div role="tabpanel"><!-- TODO --></div>
+          </li>
+          <li id="panel3" role="tab" aria-disabled="true">
+            <a href="#panel3">Storage</a>
+            <div role="tabpanel"><!-- TODO --></div>
+          </li>
         </ul>
-        <header>Datacenter London <span id="total-London"></span></header>
-        <ul id="machines-London">
-        </ul>
-
-        <button id="refresh">Reload</button>
       </section>
     </section>
 
