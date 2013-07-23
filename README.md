@@ -8,9 +8,9 @@ Screenshots
 -----------
 
 ![Login Screenshot](https://raw.github.com/palmerabollo/instantservers-firefoxos/master/style/icons/screenshot_1.jpg)
-
+&nbsp;
 ![Compute Screenshot](https://raw.github.com/palmerabollo/instantservers-firefoxos/master/style/icons/screenshot_2.jpg)
-
+&nbsp;
 ![Network Screenshot](https://raw.github.com/palmerabollo/instantservers-firefoxos/master/style/icons/screenshot_3.jpg)
 
 License
