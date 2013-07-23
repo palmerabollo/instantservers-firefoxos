@@ -28,7 +28,7 @@
   </head>
 
   <body role="application">
-    <section id="login-view" class="view skin-dark" role="region" data-page-position="viewport">
+    <section id="login-view" class="view skin-organic" role="region" data-page-position="viewport">
       <header>
         <h1 data-l10n-id="app-title">Instant Servers</h1>
       </header>
@@ -37,14 +37,14 @@
       </header>
 
       <section id="login">
-        <img class="logo" src="http://cloud.telefonica.com/instantservers/img/illustration_instantserver.png" />
+        <img class="logo" src="./res/logo.png" />
 
         <form id="login-form">
           <p>
-            <input type="text" id="username" placeholder="your username" required="required">
+            <input value="" type="text" id="username" placeholder="your username" required="required">
           </p>
           <p>
-            <input type="password" id="password" placeholder="your password" required="required">
+            <input value="" type="password" id="password" placeholder="your password" required="required">
           </p>
         </form>
 
@@ -53,10 +53,14 @@
           <br/>
           <span class="info">cloud.telefonica.es</span>
         </section>
+
+        <section role="status" class="status hidden">
+          <p>You are currently <strong>offline</strong></p>
+        </section>
       </section>
     </section>
 
-    <section id="cloud-view" class="view skin-dark" role="region" data-page-position="bottom">
+    <section id="cloud-view" class="view skin-organic" role="region" data-page-position="bottom">
       <header>
         <menu type="toolbar">
           <a href="#" id="refresh">
@@ -87,10 +91,10 @@
             <a href="#panel2">Network</a>
             <div role="tabpanel">
               <section data-type="list">
-                <header>Datacenter Madrid <span id="total-net-Madrid"></span></header>
+                <header>Nets Datacenter Madrid <span id="total-net-Madrid"></span></header>
                 <ul id="networks-Madrid">
                 </ul>
-                <header>Datacenter London <span id="total-net-London"></span></header>
+                <header>Nets Datacenter London <span id="total-net-London"></span></header>
                 <ul id="networks-London">
                 </ul>
               </section>
@@ -101,6 +105,10 @@
             <div role="tabpanel"><!-- TODO --></div>
           </li>
         </ul>
+
+        <section role="status" class="status hidden">
+          <p>You are currently <strong>offline</strong></p>
+        </section>
       </section>
     </section>
 

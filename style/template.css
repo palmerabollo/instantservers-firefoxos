@@ -87,8 +87,8 @@ section[data-type="list"] {
 
 form#login-form {
   text-align: center;
-  display: inline-block;
-  margin: 0 auto;
+  display: block;
+  margin: 0 2rem 0 2rem;
 }
 
 button {
@@ -111,5 +111,5 @@ button {
   background: #fff;
   border: solid 0.1rem #999;
   border-top: none;
-  color: #000;
+  color: #62c6f5;
 }

@@ -12,91 +12,116 @@ const UI = (function() {
   var NETWORKS = {};
 
   var refresh = function() {
-    document.querySelector('#start').disabled = true;
-    document.querySelector('#start').innerHTML = 'Loading...'; // i18n
+    $('#start').attr('disabled', true);
+    $('#start').html('Loading...'); // TODO i18n
 
-    var username = document.querySelector('#username').value;
-    var password = document.querySelector('#password').value;
+    var username = $('#username').val();
+    var password = $('#password').val();
 
-    Object.keys(ENDPOINTS).forEach(function(key) {
-      
-      document.querySelector('#total-vm-' + key).innerHTML = "...";
-      document.querySelector('#machines-' + key).innerHTML = "";
+    var requestRemoteData = function() {
+      Object.keys(ENDPOINTS).forEach(function(key) {
+        
+        $('#total-vm-' + key).html("...");
+        $('#machines-' + key).html("");
 
-      get(ENDPOINTS[key] + '/my/machines', username, password, function(err, result) {
-        if (err) {
-          handleError(err);
-        } else {
-          var cloudView = document.querySelector('#cloud-view');
-          cloudView.dataset.pagePosition = 'viewport'; // vs 'bottom'
+        get(ENDPOINTS[key] + '/my/machines', username, password, function(err, result) {
+          if (err) {
+            handleError(err);
+          } else {
+            var cloudView = $('#cloud-view');
+            cloudView.attr('data-page-position', 'viewport');
 
-          MACHINES[key] = JSON.parse(result); // save globally
+            MACHINES[key] = JSON.parse(result); // save globally
 
-          var machinesList = document.querySelector('#machines-' + key);
-          MACHINES[key].forEach(function(machine) {
-            addMachineListItem(key, machine, machinesList);
-          });
+            var machinesList = $('#machines-' + key);
+            MACHINES[key].forEach(function(machine) {
+              addMachineListItem(key, machine, machinesList);
+            });
 
-          document.querySelector('#total-vm-' + key).innerHTML = '(' + MACHINES[key].length + ')';
-        }
+            $('#total-vm-' + key).html('(' + MACHINES[key].length + ')');
+          }
+        });
+
+        $('#total-net-' + key).html("...");
+        $('#networks-' + key).html("");
+
+        get(ENDPOINTS[key] + '/my/networks', username, password, function(err, result) {
+          if (err) {
+            handleError(err);
+          } else {
+            var cloudView = $('#cloud-view');
+            cloudView.attr('data-page-position', 'viewport');
+
+            NETWORKS[key] = JSON.parse(result); // save globally
+
+            var networksList = $('#networks-' + key);
+            NETWORKS[key].forEach(function(network) {
+              addNetworkListItem(key, network, networksList);
+            });
+
+            $('#total-net-' + key).html('(' + NETWORKS[key].length + ')');
+          }
+        });
       });
+    };
 
-      document.querySelector('#total-net-' + key).innerHTML = "...";
-      document.querySelector('#networks-' + key).innerHTML = "";
-
-      get(ENDPOINTS[key] + '/my/networks', username, password, function(err, result) {
-        if (err) {
-          handleError(err);
-        } else {
-          var cloudView = document.querySelector('#cloud-view');
-          cloudView.dataset.pagePosition = 'viewport'; // vs 'bottom'
-
-          NETWORKS[key] = JSON.parse(result); // save globally
-
-          var networksList = document.querySelector('#networks-' + key);
-          NETWORKS[key].forEach(function(network) {
-            addNetworkListItem(key, network, networksList);
-          });
-
-          document.querySelector('#total-net-' + key).innerHTML = '(' + NETWORKS[key].length + ')';
-        }
-      });
-    });
+    requestRemoteData();
   };
 
   var handleError = function(err) {
-    document.querySelector('#start').disabled = false;
-    document.querySelector('#start').innerHTML = 'Login'; // i18n
+    $('#start').attr('disabled', false);
+    $('#start').html('Login'); // TODO i18n
 
     alert(err);
   }
 
   function addEventHandlers() {
-    var startButton = document.getElementById('start');
-    startButton.addEventListener('click', refresh);
+    var startButton = $('#start');
+    startButton.on('click', refresh);
 
-    var refreshButton = document.getElementById('refresh');
-    refreshButton.addEventListener('click', refresh);
+    var refreshButton = $('#refresh');
 
-    var panel1 = document.getElementById('panel1');
-    var panel2 = document.getElementById('panel2');
+    var panel1 = $('#panel1');
+    var panel2 = $('#panel2');
 
-    panel1.addEventListener('click', function() {
-      panel1.classList.add('active');
-      panel2.classList.remove('active');
+    panel1.click(function() {
+      panel1.addClass('active');
+      panel2.removeClass('active');
     });
 
-    panel2.addEventListener('click', function() {
-      panel2.classList.add('active');
-      panel1.classList.remove('active');
+    panel2.click(function() {
+      panel2.addClass('active');
+      panel1.removeClass('active');
     });
+
+    var activateOfflineMode = function() {
+      $('#start').hide();
+      $('#refresh').attr('aria-disabled', 'true').off('click');
+      $('.status').show();
+    }
+
+    var activateOnlineMode = function() {
+      $('#start').show();
+      $('#refresh').attr('aria-disabled', '').on('click', refresh);
+      $('.status').hide();
+    }
+
+    window.addEventListener("offline", activateOfflineMode);
+
+    window.addEventListener("online", activateOnlineMode);
+
+    if (!navigator.onLine) {
+      activateOfflineMode();
+    } else {
+      activateOnlineMode();
+    }
   }
 
   addEventHandlers();
 
   var addMachineListItem = function(datacenterName, machine, machinesList) {
     // TODO use proper template engine
-    machinesList.innerHTML += '' +
+    machinesList.append(
       '<li>' +
       '<a class="machine" href="#" id="' + machine.id + '">' +
       '<p>' + 
@@ -105,12 +130,12 @@ const UI = (function() {
       '</p>' +
       '<p>' + machine.primaryIp + ' - ' + (machine.memory / 1024) + 'GB - ' + machine.type + '</p>' + 
       '</a>' +
-      '</li>';
+      '</li>');
   }
 
   var addNetworkListItem = function(datacenterName, network, networksList) {
     // TODO use proper template engine
-    networksList.innerHTML += '' +
+    networksList.append(
       '<li>' +
       '<a class="network" href="#" id="' + network.id + '">' +
       '<p>' + 
@@ -119,7 +144,7 @@ const UI = (function() {
       '</p>' +
       '<p>' + network.subnet + ' - IP: ' + network.public_gw_ip + '</p>' + 
       '</a>' +
-      '</li>';
+      '</li>');
   }
 
   $(document).on("click", "a.network", function(e) {
@@ -128,7 +153,7 @@ const UI = (function() {
     Object.keys(NETWORKS).forEach(function(key) {
       NETWORKS[key].forEach(function(network) {
         if (network.id == selectedElementId) {
-          alert('Name: ' + network.name + '\r\n' +
+          alert('Name: ' + network.name + '\r\n\r\n' +
             'Subnet: ' + network.subnet + '\r\n' +
             'Private GW: ' + network.private_gw_ip + '\r\n' +
             'Public GW: ' + network.public_gw_ip + '\r\n' +
@@ -145,14 +170,13 @@ const UI = (function() {
     Object.keys(MACHINES).forEach(function(key) {
       MACHINES[key].forEach(function(machine) {
         if (machine.id == selectedElementId) {
-          alert('Name: ' + machine.name + '\r\n' +
+          alert('Name: ' + machine.name + '\r\n\r\n' +
             'Type: ' + machine.type + '\r\n' +
+            machine.dataset + '\r\n\r\n' +
             'State: ' + machine.state + '\r\n' +
-            'Dataset: ' + machine.dataset + '\r\n' +
-            'Memory: ' + machine.memory + '\r\n' +
-            'Disk: ' + machine.disk + '\r\n' +
-            'IP: ' + machine.primaryIp + '\r\n' +
-            'Creation: ' + machine.created + '\r\n'
+            'Memory: ' + machine.memory + ' MB\r\n' +
+            'Disk: ' + machine.disk + ' MB\r\n' +
+            'IP: ' + machine.primaryIp + '\r\n'
           );
         }
       });
@@ -176,20 +200,21 @@ const UI = (function() {
       if (xhr.status === 200 || xhr.status === 0) {
         callback(null, this.responseText)
       } else if (xhr.status === 401) {
-        callback("Wrong username or password.");
+        callback('Wrong username or password.');
       } else {
-        callback("Not able to get your data. Please try again.");
+        callback('Not able to get your data. Please try again.');
       }
     };
 
     xhr.ontimeout = function() {
-      callback("Not able to get your data (timeout). Try again in a minute.");
+      callback('Not able to get your data (timeout). Try again in a minute.');
     };
 
     xhr.onerror = function() {
-      callback("Not able to get your data. An error occurred.");
+      callback('Not able to get your data. An unexpected error occurred.');
     };
 
     xhr.send();
   };
+
 }());
