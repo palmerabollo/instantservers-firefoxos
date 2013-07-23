@@ -166,7 +166,7 @@ const UI = (function() {
 
     xhr.open('GET', endpoint, true, username, password);
 
-    xhr.timeout = 60000;
+    xhr.timeout = 90000;
 
     xhr.setRequestHeader('X-Api-Version', X_API_VERSION_HEADER);
     xhr.setRequestHeader('Accept', 'application/json');

@@ -2,9 +2,11 @@
   "name": "Instant Servers",
   "description": "Instant Servers. Online computing power. Unofficial application.",
   "version": "0.3",
-  "type": "certified",
+  "type": "privileged",
   "permissions": {
-    "systemXHR": {}
+    "systemXHR": {
+      "description": "Access Instant Servers Cloud API"
+    }
   },
   "launch_path": "/index.html",
   "developer": {
