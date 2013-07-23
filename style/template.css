@@ -98,7 +98,7 @@ button {
 
 .info {
   margin-top: 1rem;
-  font: normal 1.4rem/1em;
+  font: normal 1.4rem/1em "Open Sans", Sans-serif;
 }
 
 /** tabs hack */

@@ -22,6 +22,7 @@
     <link rel="stylesheet" type="text/css" href="style/template.css">
 
     <!-- Specific code -->
+    <script type="application/javascript" src="js/jquery-2.0.3.min.js"></script>
     <script type="application/javascript" src="js/async_storage.js"></script>
     <script defer type="application/javascript" src="js/template-ui.js"></script>
   </head>
@@ -36,7 +37,6 @@
       </header>
 
       <section id="login">
-
         <img class="logo" src="http://cloud.telefonica.com/instantservers/img/illustration_instantserver.png" />
 
         <form id="login-form">
@@ -56,7 +56,7 @@
       </section>
     </section>
 
-    <section id="machines-view" class="view skin-dark" role="region" data-page-position="bottom">
+    <section id="cloud-view" class="view skin-dark" role="region" data-page-position="bottom">
       <header>
         <menu type="toolbar">
           <a href="#" id="refresh">
@@ -68,30 +68,33 @@
         <h1 data-l10n-id="app-title">Instant Servers</h1>
       </header>
 
-      <!--
-      <header>
-        <h2>Virtual Machines</h2>
-      </header>
-      -->
-
       <section role="region">
         <ul role="tablist" data-items="3">
           <li id="panel1" role="tab" class="active">
             <a href="#panel1">Compute</a>
             <div role="tabpanel">
               <section data-type="list">
-                <header>Datacenter Madrid <span id="total-Madrid"></span></header>
+                <header>Datacenter Madrid <span id="total-vm-Madrid"></span></header>
                 <ul id="machines-Madrid">
                 </ul>
-                <header>Datacenter London <span id="total-London"></span></header>
+                <header>Datacenter London <span id="total-vm-London"></span></header>
                 <ul id="machines-London">
                 </ul>
               </section>
             </div>
           </li>
-          <li id="panel2" role="tab" aria-disabled="true">
+          <li id="panel2" role="tab">
             <a href="#panel2">Network</a>
-            <div role="tabpanel"><!-- TODO --></div>
+            <div role="tabpanel">
+              <section data-type="list">
+                <header>Datacenter Madrid <span id="total-net-Madrid"></span></header>
+                <ul id="networks-Madrid">
+                </ul>
+                <header>Datacenter London <span id="total-net-London"></span></header>
+                <ul id="networks-London">
+                </ul>
+              </section>
+            </div>
           </li>
           <li id="panel3" role="tab" aria-disabled="true">
             <a href="#panel3">Storage</a>
