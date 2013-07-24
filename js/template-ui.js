@@ -3,83 +3,95 @@
 const UI = (function() {
   var X_API_VERSION_HEADER = '~6.5';
 
-  var ENDPOINTS = {
-    'Madrid': 'https://api-eu-mad-1.instantservers.telefonica.com',
-    'London': 'https://api-eu-lon-1.instantservers.telefonica.com'
-  };
+  var CLOUD_API_ENDPOINT = 'https://api-eu-mad-1.instantservers.telefonica.com';
+  var ENDPOINTS = {};
+  var ELEMENTS = {};
 
-  var MACHINES = {};
-  var NETWORKS = {};
-
-  var refresh = function() {
+  var authenticate = function() {
     $('#start').attr('disabled', true);
     $('#start').html('Loading...'); // TODO i18n
 
     var username = $('#username').val();
     var password = $('#password').val();
 
-    var requestRemoteData = function() {
-      Object.keys(ENDPOINTS).forEach(function(key) {
-        
-        $('#total-vm-' + key).html("...");
-        $('#machines-' + key).html("");
-
-        get(ENDPOINTS[key] + '/my/machines', username, password, function(err, result) {
-          if (err) {
-            handleError(err);
-          } else {
-            var cloudView = $('#cloud-view');
-            cloudView.attr('data-page-position', 'viewport');
-
-            MACHINES[key] = JSON.parse(result); // save globally
-
-            var machinesList = $('#machines-' + key);
-            MACHINES[key].forEach(function(machine) {
-              addMachineListItem(key, machine, machinesList);
-            });
-
-            $('#total-vm-' + key).html('(' + MACHINES[key].length + ')');
-          }
-        });
-
-        $('#total-net-' + key).html("...");
-        $('#networks-' + key).html("");
-
-        get(ENDPOINTS[key] + '/my/networks', username, password, function(err, result) {
-          if (err) {
-            handleError(err);
-          } else {
-            var cloudView = $('#cloud-view');
-            cloudView.attr('data-page-position', 'viewport');
-
-            NETWORKS[key] = JSON.parse(result); // save globally
-
-            var networksList = $('#networks-' + key);
-            NETWORKS[key].forEach(function(network) {
-              addNetworkListItem(key, network, networksList);
-            });
-
-            $('#total-net-' + key).html('(' + NETWORKS[key].length + ')');
-          }
-        });
+    var promise = get(CLOUD_API_ENDPOINT + '/my/datacenters', username, password);
+    $.when(promise)
+      .done(function(data, textStatus, xhr) {
+        ENDPOINTS = data;
+        showDashboard();
+      })
+      .fail(function(xhr) {
+        if (xhr.status === 401) {
+          handleError("Wrong username or password");
+        } else {
+          handleError("Not able to authenticate. Try again in a minute.");
+        }
+      })
+      .always(function() {
+        $('#start').attr('disabled', false);
+        $('#start').html('Login'); // TODO i18n
       });
-    };
+  }
 
-    requestRemoteData();
+  var refreshDashboard = function() {
+    $('#refresh').attr('aria-disabled', 'true').off('click');
+
+    var username = $('#username').val();
+    var password = $('#password').val();
+    
+    var promises = [];
+
+    Object.keys(ENDPOINTS).forEach(function(datacenter) {        
+      $('#total-machines-' + datacenter).html("...");
+      $('#machines-' + datacenter).html("");
+      var machinesPromise = get(ENDPOINTS[datacenter] + '/my/machines', username, password);
+      machinesPromise
+        .done(function(data, textStatus, xhr) {
+          renderMachinesList(data, datacenter);
+        })
+        .fail(function(xhr) {
+          if (xhr.status === 401) {
+            logout();
+          } else {
+            handleError('Not able to get your virtual machines in ' + datacenter);
+          }
+        });
+      promises.push(machinesPromise);
+
+      $('#total-networks-' + datacenter).html("...");
+      $('#networks-' + datacenter).html("");
+      var networksPromise = get(ENDPOINTS[datacenter] + '/my/networks', username, password);
+      networksPromise
+        .done(function(data, textStatus, xhr) {
+          renderNetworksList(data, datacenter);
+        })
+        .fail(function(xhr) {
+          if (xhr.status === 401) {
+            logout();
+          } else {
+            handleError('Not able to get your virtual machines in ' + datacenter);
+          }
+        });
+      promises.push(networksPromise);
+    });
+
+    $.when(promises).always(function() {
+      $('#refresh').attr('aria-disabled', '').on('click', refreshDashboard);
+    });
   };
 
-  var handleError = function(err) {
-    $('#start').attr('disabled', false);
-    $('#start').html('Login'); // TODO i18n
+  var handleError = function(message) {
+    alert(message);
+  }
 
-    alert(err);
+  var logout = function() {
+    $("#password").val("");
+    hideDashboard();
   }
 
   function addEventHandlers() {
     var startButton = $('#start');
-    startButton.on('click', refresh);
-
-    var refreshButton = $('#refresh');
+    startButton.on('click', authenticate);
 
     var panel1 = $('#panel1');
     var panel2 = $('#panel2');
@@ -90,8 +102,8 @@ const UI = (function() {
     });
 
     panel2.click(function() {
-      panel2.addClass('active');
       panel1.removeClass('active');
+      panel2.addClass('active');      
     });
 
     var activateOfflineMode = function() {
@@ -102,12 +114,11 @@ const UI = (function() {
 
     var activateOnlineMode = function() {
       $('#start').show();
-      $('#refresh').attr('aria-disabled', '').on('click', refresh);
+      $('#refresh').attr('aria-disabled', '').on('click', refreshDashboard);
       $('.status').hide();
     }
 
     window.addEventListener("offline", activateOfflineMode);
-
     window.addEventListener("online", activateOnlineMode);
 
     if (!navigator.onLine) {
@@ -119,11 +130,69 @@ const UI = (function() {
 
   addEventHandlers();
 
-  var addMachineListItem = function(datacenterName, machine, machinesList) {
+  var showDashboard = function() {
+    var cloudView = $('#cloud-view');
+    cloudView.attr('data-page-position', 'viewport');
+
+    refreshDashboard();
+  }
+
+  var hideDashboard = function() {
+    var cloudView = $('#cloud-view');
+    cloudView.attr('data-page-position', 'bottom');
+  }
+
+  var renderMachinesList = function(machines, datacenter) {
+    var machinesList = $('#machines-' + datacenter);
+    machines.forEach(function(item) {
+      item.toHTML = function() {
+        return 'Name: ' + this.name + '\r\n\r\n' +
+          'Type: ' + this.type + '\r\n' +
+          this.dataset + '\r\n\r\n' +
+          'State: ' + this.state + '\r\n' +
+          'Memory: ' + (this.memory / 1024) + ' GB\r\n' +
+          'Disk: ' + (this.disk / 1024) + ' GB\r\n' +
+          'IP: ' + this.primaryIp;
+      };
+      putCache(item);
+
+      addMachineListItem(item, machinesList);
+    });
+
+    $('#total-machines-' + datacenter).html('(' + machines.length + ')');
+  }
+
+  var renderNetworksList = function(networks, datacenter) {
+    var networksList = $('#networks-' + datacenter);
+    networks.forEach(function(item) {
+      item.toHTML = function() {
+        return 'Name: ' + this.name + '\r\n\r\n' +
+          'Subnet: ' + this.subnet + '\r\n' +
+          'Private GW: ' + this.private_gw_ip + '\r\n' +
+          'Public GW: ' + this.public_gw_ip + '\r\n' +
+          'State: ' + this.status;
+      };
+      putCache(item);
+
+      addNetworkListItem(item, networksList);
+    });
+
+    $('#total-networks-' + datacenter).html('(' + networks.length + ')');
+  }
+
+  var putCache = function(element) {
+    ELEMENTS[element.id] = element;
+  }
+
+  var getCache = function(id) {
+    return ELEMENTS[id];
+  }
+
+  var addMachineListItem = function(machine, list) {
     // TODO use proper template engine
-    machinesList.append(
+    list.append(
       '<li>' +
-      '<a class="machine" href="#" id="' + machine.id + '">' +
+      '<a class="element" href="#" id="' + machine.id + '">' +
       '<p>' + 
       (machine.state === 'running' ? '<img src="./res/green.gif">' : '<img src="./res/red.gif">') + '&nbsp;' +
       machine.name + 
@@ -133,11 +202,11 @@ const UI = (function() {
       '</li>');
   }
 
-  var addNetworkListItem = function(datacenterName, network, networksList) {
+  var addNetworkListItem = function(network, list) {
     // TODO use proper template engine
-    networksList.append(
+    list.append(
       '<li>' +
-      '<a class="network" href="#" id="' + network.id + '">' +
+      '<a class="element" href="#" id="' + network.id + '">' +
       '<p>' + 
       (network.status === 'created' ? '<img src="./res/green.gif">' : '<img src="./res/red.gif">') + '&nbsp;' +
       network.name + 
@@ -147,74 +216,37 @@ const UI = (function() {
       '</li>');
   }
 
-  $(document).on("click", "a.network", function(e) {
-    var selectedElementId = this.id;
-
-    Object.keys(NETWORKS).forEach(function(key) {
-      NETWORKS[key].forEach(function(network) {
-        if (network.id == selectedElementId) {
-          alert('Name: ' + network.name + '\r\n\r\n' +
-            'Subnet: ' + network.subnet + '\r\n' +
-            'Private GW: ' + network.private_gw_ip + '\r\n' +
-            'Public GW: ' + network.public_gw_ip + '\r\n' +
-            'Status: ' + network.status + '\r\n'
-          );
-        }
-      });
-    });
+  $(document).on("click", "a.element", function(e) {
+    var element = getCache(this.id);
+    alert(element.toHTML());
   });
 
-  $(document).on("click", "a.machine", function(e) {
-    var selectedElementId = this.id;
+  var get = function(endpoint, username, password) {
+    return $.ajax(
+      endpoint,
+      {
+        xhr: function() {
+          var xhr = new XMLHttpRequest({
+            mozSystem: true,
+            // XXX hack, a bug in firefox os prompts for user/pass if you omit this flag
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=282547#c24
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=282547#c26
+            mozAnon: true
+          });
+          xhr.open('GET', endpoint, true);
+          xhr.timeout = 40000;
+          xhr.setRequestHeader('Accept', 'application/json');
+          return xhr;
+        },
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader('X-Api-Version', X_API_VERSION_HEADER);
+          xhr.setRequestHeader('Accept', 'application/json'); // XXX
 
-    Object.keys(MACHINES).forEach(function(key) {
-      MACHINES[key].forEach(function(machine) {
-        if (machine.id == selectedElementId) {
-          alert('Name: ' + machine.name + '\r\n\r\n' +
-            'Type: ' + machine.type + '\r\n' +
-            machine.dataset + '\r\n\r\n' +
-            'State: ' + machine.state + '\r\n' +
-            'Memory: ' + machine.memory + ' MB\r\n' +
-            'Disk: ' + machine.disk + ' MB\r\n' +
-            'IP: ' + machine.primaryIp + '\r\n'
-          );
-        }
-      });
-    });
-  });
-
-  var get = function(endpoint, username, password, callback) {
-    var xhr = new XMLHttpRequest({
-      mozSystem: true
-    });
-
-    xhr.open('GET', endpoint, true, username, password);
-
-    xhr.timeout = 90000;
-
-    xhr.setRequestHeader('X-Api-Version', X_API_VERSION_HEADER);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-
-    xhr.onload = function() {
-      if (xhr.status === 200 || xhr.status === 0) {
-        callback(null, this.responseText)
-      } else if (xhr.status === 401) {
-        callback('Wrong username or password.');
-      } else {
-        callback('Not able to get your data. Please try again.');
+          var authorization = "Basic " + btoa(username + ':' + password);
+          xhr.setRequestHeader('Authorization', authorization);
+        },
+        dataType: "json"
       }
-    };
-
-    xhr.ontimeout = function() {
-      callback('Not able to get your data (timeout). Try again in a minute.');
-    };
-
-    xhr.onerror = function() {
-      callback('Not able to get your data. An unexpected error occurred.');
-    };
-
-    xhr.send();
+    );
   };
-
 }());
