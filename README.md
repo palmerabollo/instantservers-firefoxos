@@ -1,7 +1,7 @@
 Instant Servers - Firefox OS
 ============================
 
-Unofficial Instant Servers client for Firefox OS.
+Unofficial [Instant Servers](http://cloud.telefonica.com/instantservers/) client for Firefox OS.
 It helps you manage your virtual machines and networks from your Firefox OS device.
 
 Screenshots
